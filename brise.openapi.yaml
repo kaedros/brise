@@ -1,0 +1,754 @@
+openapi: 3.0.2
+info:
+  title: Brise API
+  version: 2.0.0
+  contact:
+    name: AGST
+    url: https://forum.agst.com.br
+    email: ped@agst.com.br
+  description: |
+    A Brise API fornece ferramentas para desenvolver integrações entre seus dispositivos Brise e outras demais dispositivos de automação, possibilitando integrações com sistema de supervisão e gestão de automação.
+
+    A Brise API é RESTful e trabalha com payloads em formato `JSON`.
+
+    Examples
+      * Obtenha as informações do usuário
+        ```
+          curl --location --request
+          GET 'https://brisev2.agst.com.br:8090/api/v2/user' \
+          --header 'Authorization: Bearer 2gbdx6oar67tqtcmt49t3wpcgycthx'
+        ```
+      * Obtenha dispositivos do usuário
+        ```
+          curl --location --request
+          GET 'https://brisev2.agst.com.br:8090/api/v2/user-devices' \
+          --header 'Authorization: Bearer 2gbdx6oar67tqtcmt49t3wpcgycthx'
+        ```
+
+    **Aletar:** Estamos em fase de testes.
+
+    Última atualização: 26/05/2021
+  x-logo:
+    url: logo.png
+
+tags:
+  - name: Usuários
+  - name: Dispositivo
+  - name: Agenda
+
+servers:
+  - url: "https://brisev2.agst.com.br:8090/api/v2"
+    description: Servidor de Produção
+
+components:
+  schemas:
+    schedules:
+      type: object
+      properties:
+        schedule_id:
+          type: integer
+          format: int32
+          description: Número único de identificação do agendamento
+          example: 1622126644
+        name:
+          type: string
+          description: Nome para identificar o agendamento
+          pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89AB][0-9a-f]{3}-[0-9a-f]{12}$
+          example: Turno Tarde
+        enable:
+          type: boolean
+          description: Agendamento habilitado
+          example: true
+        date_start:
+          type: integer
+          format: int32
+          description: Data de inicio do agendamento em UT (Universal TIme)
+          example: 1622126644
+        date_end:
+          type: integer
+          format: int32
+          description: Data de fim do agendamento em UT (Universal TIme)
+          example: 1622126644
+        repetition_mode:
+          type: integer
+          format: int32
+          description: |-
+            Modo de repetição:
+            - 0: Sem repetição
+            - 1: Semanal
+            - 2: Dias
+            - 3: Meses
+            - 4: Anos
+          example: 1
+        repetition_value:
+          type: integer
+          format: int32
+          description: |-
+            Modo de repetição:
+            - Sem repetição: any
+            - Semanal: domingo 00000000 segunda. (segunda = 1; segunda mais domingo = 65)
+            - Dias: Número de dias que o agendamento irá se repetir
+            - Meses: Número de meses que o agendamento irá se repetir
+            - Anos: Número de anos que o agendamento irá se repetir
+          example: 1
+        parameter:
+          $ref: "#/components/schemas/parameter"
+
+    variables:
+      type: object
+      properties:
+        state:
+          type: boolean
+          description: Estatus do AC
+          example: true
+        temperature:
+          type: number
+          description: Temperatura do ambiente em [ºC]
+          example: 24.5
+        temperature_out:
+          type: number
+          description: Temperatura externa em [ºC] `Temperatura da cidade ao qual o dispositivo esta cadastrado`
+          example: 28.1
+        humidity:
+          type: integer
+          description: Umidade relativa do ambiente em [%]
+          example: 50
+        humidity_out:
+          type: integer
+          description: Umidade externa em [%] `Umidade relativa da cidade ao qual o dispositivo esta cadastrado`
+          example: 50
+        consumption:
+          type: integer
+          description: Consumo do mês vigente em [KWh] `Obtido por sensor de consumo externo`
+          example: 23
+        consumption_estimated:
+          type: integer
+          description: Consumo estimado do mês vigente em [KWh] `Estimado pelo perfil do uso e capacidade do AC`
+          example: 50
+    devices:
+      type: object
+      properties:
+        device_id:
+          type: integer
+          description: Número de série do dispositivo
+          example: 100000
+        device_user:
+          type: string
+          description: Usuário do dispositivo
+          example: admin
+        device_password:
+          type: string
+          description: Senha do dispositivo
+          example: "123456"
+    user:
+      type: object
+      properties:
+        user_id:
+          type: integer
+          description: Número único de identificação do usuário
+          example: 1
+        name:
+          type: string
+          description: Nome de identificação do usuário
+          example: João
+        email:
+          type: string
+          description: Endereço de email usado para login
+          example: joao@agst.com.br
+        lastlogin:
+          type: integer
+          description: Data e hora do último login feito pelo usuário em UT (Universal Time)
+          example: 1622054380
+    parameter:
+      type: object
+      properties:
+        modeDevice:
+          type: integer
+          description: |-
+            Modo de funcionamento do dispositivo:
+            - 0: Desligado
+            - 1: Manual
+            - 2: Absoluto
+            - 3: Eco
+          example: 0
+        modeAC:
+          type: integer
+          description: |-
+            Modo de funcionamento do Ar Condicionado:
+            - 0: Refrigeração
+            - 1: Aquecimento
+            - 2: Automatico `Apenas no Modo Eco de funcionamento dispositivo`
+            - 3: Ventilação
+          example: 0
+        setpointCool:
+          type: integer
+          description: Temperatura desejada para resfriamento `0 = desliga o AC`
+          example: 24
+        fanSpeed:
+          type: integer
+          description: |-
+            Velocidade do ventilador
+            - 1: Velocidade Baixa
+            - 2: Velocidade Média
+            - 3: Velocidade Alta
+          example: 3
+        setpointHeat:
+          type: integer
+          description: Temperatura desejada para aquecimento `0 = desliga o AC`
+          example: 20
+        ecoCool:
+          type: integer
+          description: Temperatura desejada para economia de resfriamento
+          example: 22
+        ecoHeat:
+          type: integer
+          description: Temperatura desejada para economia de aquecimento
+          example: 18
+    config:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Nome para identificação do dispositivo
+          example: Maquina 1
+        device_user:
+          type: string
+          description: Usuário do dispositivo
+          example: admin
+        device_password:
+          type: string
+          description: Senha do dispositivo
+          example: "123456"
+        place_id:
+          type: integer
+          description: Numero de identificação do local
+          example: 1
+        time_zone:
+          type: integer
+          description: Fuso horário
+          example: -3
+        group_leve1:
+          type: string
+          description: Grupo nivel 1
+          example: Predio_Administracao
+        group_leve2:
+          type: string
+          description: Grupo nivel 2
+          example: Bloco_A
+        group_leve3:
+          type: string
+          description: Grupo nivel 3
+          example: Primeiro_Andar
+        group_leve4:
+          type: string
+          description: Grupo nivel 4
+          example: Sala_Reuniao
+        btu:
+          type: string
+          description: Potencia frigorifica da AC em BTU
+          example: "12000"
+        log_day:
+          type: integer
+          description: Dia do mes para registro do consumo
+          example: 31
+        pulse_kw:
+          type: integer
+          description: Numero de pulsos por KW (QuiloWhatt) do sensor de consumo externo
+          example: 2000
+        enable_heat:
+          type: boolean
+          description: Habilita as funções de aquecimento
+          example: true
+        dnd:
+          type: boolean
+          description: Habilita a função de não perturbe do led sinalizador
+          example: true
+
+  securitySchemes:
+    api_key:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    briseAuth:
+      description: Antes de executar chamadas ha API, é necessário um Token de Acesso.<br><br>Para obter um deve-se criar uma conta no serviço através do Brise App em seu smartphone previamente. Para gerar o Token de Acesso [clique aqui](https://brisev2.agst.com.br:8090/api/v2/reqwithlogin), faça seu login que será disponibilizado o Token de Acesso.<h3>Oauth 2.0 authorizationCode authentication</h3>
+      type: oauth2
+      flows:
+        authorizationCode:
+          authorizationUrl: "https://brisev2.agst.com.br:8090/api/v2/authorize"
+          tokenUrl: "https://brisev2.agst.com.br:8090/api/v2/exchange-code"
+
+paths:
+  /user:
+    get:
+      summary: Obtem informações
+      description: Obtem as informações da conta do usuário no serviço de Cloud.<aside>As informações são da conta do usuário que é proprietário do Token de Acesso.
+      tags:
+        - Usuários
+      responses:
+        "200":
+          description: OK. Retorna as informações da conta do usuário com sucesso.
+          content:
+            application/json:
+              schema:
+                properties:
+                  user_id:
+                    type: integer
+                    description: Número único de identificação do usuário
+                    example: 1
+                  name:
+                    type: string
+                    description: Nome de identificação do usuário
+                    example: João
+                  email:
+                    type: string
+                    description: Endereço de email usado para login
+                    example: joao@agst.com.br
+                  lastlogin:
+                    type: integer
+                    description: Data e hora do último login feito pelo usuário em UT (Universal Time)
+                    example: 1622054380
+    post:
+      summary: Cria conta
+      description: Cria uma nova conta de usuário no serviço de Cloud.<aside> **Alerta:** Para criar uma conta o usuário `não` precisa de Token de Acesso.</aside>
+      security:
+        - {}
+      tags:
+        - Usuários
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              required:
+                - name
+                - email
+                - password
+              properties:
+                name:
+                  type: string
+                  description: Nome de identificação do usuário
+                  example: João
+                email:
+                  type: string
+                  description: Endereço de email usado para login
+                  example: joao@agst.com.br
+                password:
+                  type: string
+                  description: Senha da conta do usuário
+                  example: 123456
+      responses:
+        "200":
+          description: OK. Conta de usuário criada com sucesso.
+        "400":
+          description: Bad Request. Essa resposta significa que o servidor não entendeu a requisição pois está com uma sintaxe inválida.
+        "409":
+          description: Conflict. Esta resposta será enviada quando uma requisição conflitar com o estado atual do servidor.
+    put:
+      summary: Altera conta
+      description: Altera conta de usuário.<aside>As informações são da conta do usuário que é proprietário do Token de Acesso.</aside>
+      tags:
+        - Usuários
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              required:
+                - password
+              properties:
+                name:
+                  type: string
+                  description: Nome de identificação do usuário
+                  example: João
+                new_password:
+                  type: string
+                  description: Nova senha da conta do usuário
+                  example: 654321
+                password:
+                  type: string
+                  description: Senha atual da conta do usuário
+                  example: 123456
+      responses:
+        "200":
+          description: OK. Conta alterada com sucesso.
+  "/user/devices":
+    get:
+      summary: Obtem dispositivos
+      description: Obtem os dispositivos ao qual a conta do usuário tem acesso
+      tags:
+        - Usuários
+      responses:
+        "200":
+          description: OK. Retorna os dispositivos que o usuário tem acesso com sucesso.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  devices:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/devices"
+    post:
+      summary: Adiciona dispositivo
+      description: Adiciona um dispositivo a conta do usuário
+      tags:
+        - Usuários
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              required:
+                - device_id
+                - device_user
+                - device_password
+              properties:
+                device_id:
+                  type: integer
+                  description: Número de série do dispositivo
+                  maximum: 999999
+                  example: 100000
+                device_user:
+                  type: string
+                  description: Usuário do dispositivo
+                  maxLength: 20
+                  example: admin
+                device_password:
+                  type: string
+                  description: Senha do dispositivo
+                  maxLength: 20
+                  example: 123456
+      responses:
+        "200":
+          description: OK. Adiciona o dispositivo ao usuário com sucesso.
+  "/user/devices/{device_id}":
+    delete:
+      summary: Remove dispositivo
+      description: Remove dispositivo da conta do usuários
+      tags:
+        - Usuários
+      parameters:
+        - name: device_id
+          in: path
+          description: Número de série do dispositivo Brise
+          required: true
+          schema:
+            type: string
+            maximum: 999999
+            example: 100000
+      responses:
+        "200":
+          description: OK. Dispositivo removido com sucesso.
+        "404":
+          description: NOK. Dispositivo não encontrado.
+
+  "/device/configs/{device_id}":
+    get:
+      summary: Obtem configurações
+      description: Obtem as configurações de um dispositivo especifico
+      tags:
+        - Dispositivo
+      parameters:
+        - name: device_id
+          in: path
+          description: Número de série do dispositivo
+          example: 100000
+          required: true
+          schema:
+            type: integer
+            maximum: 999999
+      responses:
+        "200":
+          description: OK. Retorna as configurações do dispositivo com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/config"
+    put:
+      summary: Define configurações
+      description: Altera as configurações do dispositivo especifico
+      tags:
+        - Dispositivo
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              properties:
+                name:
+                  type: string
+                  description: Nome para identificação do dispositivo
+                  example: Maquina 1
+                device_user:
+                  type: string
+                  description: Usuário do dispositivo
+                  maxLength: 20
+                  example: admin
+                device_password:
+                  type: string
+                  description: Senha do dispositivo
+                  maxLength: 20
+                  example: "123456"
+                place_id:
+                  type: integer
+                  description: Numero de identificação do local
+                  example: 1
+                time_zone:
+                  type: integer
+                  description: Fuso horário
+                  minimum: -12
+                  maximum: 13
+                  example: -3
+                group_leve1:
+                  type: string
+                  description: Grupo nivel 1
+                  maxLength: 20
+                  example: Predio_Administracao
+                group_leve2:
+                  type: string
+                  description: Grupo nivel 2
+                  maxLength: 20
+                  example: Bloco_A
+                group_leve3:
+                  type: string
+                  description: Grupo nivel 3
+                  maxLength: 20
+                  example: Primeiro_Andar
+                group_leve4:
+                  type: string
+                  description: Grupo nivel 4
+                  maxLength: 20
+                  example: Sala_Reuniao
+                btu:
+                  type: integer
+                  description: Potencia frigorifica da AC em BTU
+                  example: 12000
+                log_day:
+                  type: integer
+                  description: Dia do mes para registro do consumo
+                  minimum: 1
+                  maximum: 31
+                  example: 31
+                pulse_kw:
+                  type: integer
+                  description: Numero de pulsos por KW (QuiloWhatt) do sensor de consumo externo
+                  example: 2000
+                enable_heat:
+                  type: boolean
+                  description: Habilita as funções de aquecimento
+                  example: true
+                dnd:
+                  type: boolean
+                  description: Habilita a função de não perturbe do led sinalizador
+                  example: true
+      responses:
+        "200":
+          description: OK. Configurações alteradas com sucesso.
+  "/device/parameters/{device_id}":
+    get:
+      summary: Obtem paremetrizações
+      description: Obtem as paremetrizações de um dispositivo especifico
+      tags:
+        - Dispositivo
+      parameters:
+        - name: device_id
+          in: path
+          description: Número de série do dispositivo Brise
+          example: 100000
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK. Retorna as parametrizações do dispositivo com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/parameter"
+    put:
+      summary: Define paremetrizações
+      description: Altera as paremetrizações do um dispositivo especifico
+      tags:
+        - Dispositivo
+      parameters:
+        - name: device_id
+          in: path
+          description: Número de série do dispositivo Brise
+          example: 100000
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              properties:
+                modeDevice:
+                  type: integer
+                  description: |-
+                    Modo de funcionamento do dispositivo:
+                    - 0: Desligado
+                    - 1: Manual
+                    - 2: Absoluto
+                    - 3: Eco
+                  example: 0
+                modeAC:
+                  type: integer
+                  description: |-
+                    Modo de funcionamento do Ar Condicionado:
+                    - 0: Refrigeração
+                    - 1: Aquecimento
+                    - 2: Automatico `Apenas no Modo Eco de funcionamento dispositivo`
+                    - 3: Ventilação
+                  example: 0
+                setpointCool:
+                  type: integer
+                  description: Temperatura desejada para resfriamento `0 = desliga o AC`
+                  example: 24
+                fanSpeed:
+                  type: integer
+                  description: |-
+                    Velocidade do ventilador
+                    - 1: Velocidade Baixa
+                    - 2: Velocidade Média
+                    - 3: Velocidade Alta
+                  example: 3
+                setpointHeat:
+                  type: integer
+                  description: Temperatura desejada para aquecimento `0 = desliga o AC`
+                  example: 20
+                ecoCool:
+                  type: integer
+                  description: Temperatura desejada para economia de resfriamento
+                  example: 22
+                ecoHeat:
+                  type: integer
+                  description: Temperatura desejada para economia de aquecimento
+                  example: 18
+      responses:
+        "200":
+          description: OK. Alterada as parametrizações com sucesso.
+  "/device/variables/{device_id}":
+    get:
+      summary: Obtem variáveis
+      description: Obtem as variáveis do dispositivo
+      tags:
+        - Dispositivo
+      parameters:
+        - name: device_id
+          in: path
+          description: Número de série do dispositivo Brise
+          example: 100000
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK. Retorna as variaveis do sistema com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/variables"
+
+  /schedules/{device_id}:
+    get:
+      summary: Obtem agendamentos
+      description: Obtem todos os agendamentos do dispositivo
+      tags:
+        - Agenda
+      parameters:
+        - name: device_id
+          in: path
+          description: Número de série do dispositivo
+          example: 100000
+          required: true
+          schema:
+            type: integer
+            maximum: 999999
+      responses:
+        "200":
+          description: OK. Retorna os agendamentos do dispositivo com sucesso.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  schedules:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/schedules"
+    post:
+      summary: Adiciona agendamento
+      description: |
+        Adiciona novo agendamento ao dispositivo.<aside>`Este número deve ser único. Indicamos o uso do relogio do aplicativo.`</aside>
+      tags:
+        - Agenda
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              required:
+                - schedule_id
+                - date_start
+                - date_end
+              $ref: "#/components/schemas/schedules"
+      responses:
+        "200":
+          description: OK. Novo agendamento ao dispositivo adicionado com sucesso.
+  "/schedules/{schedules_id}/{device_id}":
+    put:
+      summary: Altera agendamento
+      description: Altera agendamento
+      tags:
+        - Agenda
+      parameters:
+        - name: schedules_id
+          in: path
+          description: Número único de identificação do agendamento
+          example: 1622135820
+          required: true
+          schema:
+            type: integer
+        - name: device_id
+          in: path
+          description: Número de série do dispositivo
+          example: 100000
+          required: true
+          schema:
+            type: integer
+            maximum: 999999
+      responses:
+        "200":
+          description: OK. Aterou o agendamento com sucesso.
+    delete:
+      summary: Remove agendamento
+      description: Remove agendamento
+      tags:
+        - Agenda
+      parameters:
+        - name: schedules_id
+          in: path
+          description: Número único de identificação do agendamento
+          example: 1622135820
+          required: true
+          schema:
+            type: integer
+        - name: device_id
+          in: path
+          description: Número de série do dispositivo
+          example: 100000
+          required: true
+          schema:
+            type: integer
+            maximum: 999999
+      responses:
+        "200":
+          description: OK. Removeu agendamento com sucesso.
+        "404":
+          description: NOK. Agendamento não encontrado.
+
+security:
+  - briseAuth: []
