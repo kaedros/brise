@@ -29,10 +29,10 @@ info:
 
     Última atualização: 26/05/2021
   x-logo:
-    url: logo.png
+    url: ../logo.png
 
 tags:
-  - name: Usuários
+  - name: Usuário
   - name: Dispositivo
   - name: Agenda
 
@@ -283,7 +283,7 @@ paths:
       summary: Obtem informações
       description: Obtem as informações da conta do usuário no serviço de Cloud.<aside>As informações são da conta do usuário que é proprietário do Token de Acesso.
       tags:
-        - Usuários
+        - Usuário
       responses:
         "200":
           description: OK. Retorna as informações da conta do usuário com sucesso.
@@ -313,7 +313,7 @@ paths:
       security:
         - {}
       tags:
-        - Usuários
+        - Usuário
       requestBody:
         required: true
         content:
@@ -347,7 +347,7 @@ paths:
       summary: Altera conta
       description: Altera conta de usuário.<aside>As informações são da conta do usuário que é proprietário do Token de Acesso.</aside>
       tags:
-        - Usuários
+        - Usuário
       requestBody:
         required: true
         content:
@@ -376,7 +376,7 @@ paths:
       summary: Obtem dispositivos
       description: Obtem os dispositivos ao qual a conta do usuário tem acesso
       tags:
-        - Usuários
+        - Usuário
       responses:
         "200":
           description: OK. Retorna os dispositivos que o usuário tem acesso com sucesso.
@@ -393,7 +393,7 @@ paths:
       summary: Adiciona dispositivo
       description: Adiciona um dispositivo a conta do usuário
       tags:
-        - Usuários
+        - Usuário
       requestBody:
         required: true
         content:
@@ -425,9 +425,9 @@ paths:
   "/user/devices/{device_id}":
     delete:
       summary: Remove dispositivo
-      description: Remove dispositivo da conta do usuários
+      description: Remove dispositivo da conta do Usuário
       tags:
-        - Usuários
+        - Usuário
       parameters:
         - name: device_id
           in: path
