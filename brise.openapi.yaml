@@ -7,7 +7,7 @@ info:
     url: https://forum.agst.com.br
     email: ped@agst.com.br
   description: |
-    A Brise API fornece ferramentas para desenvolver integrações entre seus dispositivos Brise e outras demais dispositivos de automação, possibilitando integrações com sistema de supervisão e gestão de automação.
+    A Brise API fornece ferramentas para desenvolver integrações entre seus dispositivos Brise e outros demais dispositivos de automação, possibilitando integrações com sistemas de supervisão e gestão de automação.
 
     A Brise API é RESTful e trabalha com payloads em formato `JSON`.
 
@@ -96,7 +96,6 @@ components:
           example: 1
         parameter:
           $ref: "#/components/schemas/parameter"
-
     variables:
       type: object
       properties:
@@ -256,6 +255,35 @@ components:
           description: Habilita a função de não perturbe do led sinalizador
           example: true
 
+  responses:
+    Unauthorized:
+      description: Unauthorized. Seu token de acesso expirou ou foi revogado.
+    Forbidden:
+      description: Forbidden. Não possue acesso ao dispositivo.
+    NoContent:
+      description: No Content. O dispositivo pode estar desligado no momento ou sua autenticação está incorreta.
+    NotFound:
+      description: Not Found. Agendamento não localizado para remove-lo.
+
+  parameters:
+    schedule_id:
+      name: schedule_id
+      in: path
+      description: Número único de identificação do agendamento
+      example: 1622135820
+      required: true
+      schema:
+        type: integer
+    device_id:
+      name: device_id
+      in: path
+      required: true
+      description: Número de série do dispositivo Brise
+      schema:
+        type: string
+        maximum: 999999
+        example: 100000
+
   securitySchemes:
     api_key:
       type: http
@@ -289,7 +317,7 @@ paths:
                     items:
                       $ref: "#/components/schemas/devices"
         "401":
-          description: Unauthorized. Seu token de acesso expirou ou foi revogado.
+          $ref: "#/components/responses/Unauthorized"
     post:
       summary: Adiciona dispositivo
       description: Adiciona um dispositivo a conta do usuário
@@ -324,7 +352,7 @@ paths:
         "200":
           description: OK. Adiciona o dispositivo ao usuário com sucesso.
         "401":
-          description: Unauthorized. Seu token de acesso expirou ou foi revogado.
+          $ref: "#/components/responses/Unauthorized"
   "/user/devices/{device_id}":
     delete:
       summary: Remove dispositivo
@@ -332,19 +360,12 @@ paths:
       tags:
         - Usuário
       parameters:
-        - name: device_id
-          in: path
-          description: Número de série do dispositivo Brise
-          required: true
-          schema:
-            type: string
-            maximum: 999999
-            example: 100000
+        - $ref: "#/components/parameters/device_id"
       responses:
         "200":
           description: OK. Dispositivo removido com sucesso.
         "401":
-          description: Unauthorized. Seu token de acesso expirou ou foi revogado.
+          $ref: "#/components/responses/Unauthorized"
         "404":
           description: Not Found. Este dispositivo não está relacionado ao usuário para remove-lo.
 
@@ -355,14 +376,7 @@ paths:
       tags:
         - Dispositivo
       parameters:
-        - name: device_id
-          in: path
-          description: Número de série do dispositivo
-          example: 100000
-          required: true
-          schema:
-            type: integer
-            maximum: 999999
+        - $ref: "#/components/parameters/device_id"
       responses:
         "200":
           description: OK. Retorna as configurações do dispositivo com sucesso.
@@ -371,25 +385,18 @@ paths:
               schema:
                 $ref: "#/components/schemas/config"
         "204":
-          description: No Content. O dispositivo pode estar desligado no momento ou sua autenticação está incorreta.
+          $ref: "#/components/responses/NoContent"
         "401":
-          description: Unauthorized. Seu token de acesso expirou ou foi revogado.
+          $ref: "#/components/responses/Unauthorized"
         "403":
-          description: Forbidden. Não possue acesso ao dispositivo.
+          $ref: "#/components/responses/Forbidden"
     put:
       summary: Define configurações
       description: Altera as configurações do dispositivo especifico
       tags:
         - Dispositivo
       parameters:
-        - name: device_id
-          in: path
-          description: Número de série do dispositivo
-          example: 100000
-          required: true
-          schema:
-            type: integer
-            maximum: 999999
+        - $ref: "#/components/parameters/device_id"
       requestBody:
         required: true
         content:
@@ -456,11 +463,11 @@ paths:
         "200":
           description: OK. Configurações alteradas com sucesso.
         "204":
-          description: No Content. O dispositivo pode estar desligado no momento ou sua autenticação está incorreta.
+          $ref: "#/components/responses/NoContent"
         "401":
-          description: Unauthorized. Seu token de acesso expirou ou foi revogado.
+          $ref: "#/components/responses/Unauthorized"
         "403":
-          description: Forbidden. Não possue acesso ao dispositivo.
+          $ref: "#/components/responses/Forbidden"
   "/device/parameters/{device_id}":
     get:
       summary: Obtem paremetrizações
@@ -468,13 +475,7 @@ paths:
       tags:
         - Dispositivo
       parameters:
-        - name: device_id
-          in: path
-          description: Número de série do dispositivo Brise
-          example: 100000
-          required: true
-          schema:
-            type: string
+        - $ref: "#/components/parameters/device_id"
       responses:
         "200":
           description: OK. Retorna as parametrizações do dispositivo com sucesso.
@@ -483,24 +484,18 @@ paths:
               schema:
                 $ref: "#/components/schemas/parameter"
         "204":
-          description: No Content. O dispositivo pode estar desligado no momento ou sua autenticação está incorreta.
+          $ref: "#/components/responses/NoContent"
         "401":
-          description: Unauthorized. Seu token de acesso expirou ou foi revogado.
+          $ref: "#/components/responses/Unauthorized"
         "403":
-          description: Forbidden. Não possue acesso ao dispositivo.
+          $ref: "#/components/responses/Forbidden"
     put:
       summary: Define paremetrizações
       description: Altera as paremetrizações do um dispositivo especifico
       tags:
         - Dispositivo
       parameters:
-        - name: device_id
-          in: path
-          description: Número de série do dispositivo Brise
-          example: 100000
-          required: true
-          schema:
-            type: string
+        - $ref: "#/components/parameters/device_id"
       requestBody:
         required: true
         content:
@@ -553,11 +548,11 @@ paths:
         "200":
           description: OK. Alterada as parametrizações com sucesso.
         "204":
-          description: No Content. O dispositivo pode estar desligado no momento ou sua autenticação está incorreta.
+          $ref: "#/components/responses/NoContent"
         "401":
-          description: Unauthorized. Seu token de acesso expirou ou foi revogado.
+          $ref: "#/components/responses/Unauthorized"
         "403":
-          description: Forbidden. Não possue acesso ao dispositivo.
+          $ref: "#/components/responses/Forbidden"
   "/device/variables/{device_id}":
     get:
       summary: Obtem variáveis
@@ -565,13 +560,7 @@ paths:
       tags:
         - Dispositivo
       parameters:
-        - name: device_id
-          in: path
-          description: Número de série do dispositivo Brise
-          example: 100000
-          required: true
-          schema:
-            type: string
+        - $ref: "#/components/parameters/device_id"
       responses:
         "200":
           description: OK. Retorna as variaveis do sistema com sucesso.
@@ -580,11 +569,11 @@ paths:
               schema:
                 $ref: "#/components/schemas/variables"
         "204":
-          description: No Content. O dispositivo pode estar desligado no momento ou sua autenticação está incorreta.
+          $ref: "#/components/responses/NoContent"
         "401":
-          description: Unauthorized. Seu token de acesso expirou ou foi revogado.
+          $ref: "#/components/responses/Unauthorized"
         "403":
-          description: Forbidden. Não possue acesso ao dispositivo.
+          $ref: "#/components/responses/Forbidden"
 
   /schedules/{device_id}:
     get:
@@ -593,14 +582,7 @@ paths:
       tags:
         - Agenda
       parameters:
-        - name: device_id
-          in: path
-          description: Número de série do dispositivo
-          example: 100000
-          required: true
-          schema:
-            type: integer
-            maximum: 999999
+        - $ref: "#/components/parameters/device_id"
       responses:
         "200":
           description: OK. Retorna os agendamentos do dispositivo com sucesso.
@@ -614,17 +596,19 @@ paths:
                     items:
                       $ref: "#/components/schemas/schedules"
         "204":
-          description: No Content. O dispositivo pode estar desligado no momento ou sua autenticação está incorreta.
+          $ref: "#/components/responses/NoContent"
         "401":
-          description: Unauthorized. Seu token de acesso expirou ou foi revogado.
+          $ref: "#/components/responses/Unauthorized"
         "403":
-          description: Forbidden. Não possue acesso ao dispositivo.
+          $ref: "#/components/responses/Forbidden"
     post:
       summary: Adiciona agendamento
       description: |
         Adiciona novo agendamento ao dispositivo.<aside>`Este número (schedule_id) deve ser único. Indicamos o uso do relogio do aplicativo.`</aside>
       tags:
         - Agenda
+      parameters:
+        - $ref: "#/components/parameters/device_id"
       requestBody:
         required: true
         content:
@@ -639,11 +623,11 @@ paths:
         "200":
           description: OK. Novo agendamento ao dispositivo adicionado com sucesso.
         "204":
-          description: No Content. O dispositivo pode estar desligado no momento ou sua autenticação está incorreta.
+          $ref: "#/components/responses/NoContent"
         "401":
-          description: Unauthorized. Seu token de acesso expirou ou foi revogado.
+          $ref: "#/components/responses/Unauthorized"
         "403":
-          description: Forbidden. Não possue acesso ao dispositivo.
+          $ref: "#/components/responses/Forbidden"
   "/schedules/{schedule_id}/{device_id}":
     put:
       summary: Altera agendamento
@@ -661,62 +645,36 @@ paths:
                 - date_end
               $ref: "#/components/schemas/schedules"
       parameters:
-        - name: schedule_id
-          in: path
-          description: Número único de identificação do agendamento
-          example: 1622135820
-          required: true
-          schema:
-            type: integer
-        - name: device_id
-          in: path
-          description: Número de série do dispositivo
-          example: 100000
-          required: true
-          schema:
-            type: integer
-            maximum: 999999
+        - $ref: "#/components/parameters/schedule_id"
+        - $ref: "#/components/parameters/device_id"
       responses:
         "200":
           description: OK. Aterou o agendamento com sucesso.
         "204":
-          description: No Content. O dispositivo pode estar desligado no momento ou sua autenticação está incorreta.
+          $ref: "#/components/responses/NoContent"
         "401":
-          description: Unauthorized. Seu token de acesso expirou ou foi revogado.
+          $ref: "#/components/responses/Unauthorized"
         "403":
-          description: Forbidden. Não possue acesso ao dispositivo.
+          $ref: "#/components/responses/Forbidden"
     delete:
       summary: Remove agendamento
       description: Remove agendamento
       tags:
         - Agenda
       parameters:
-        - name: schedule_id
-          in: path
-          description: Número único de identificação do agendamento
-          example: 1622135820
-          required: true
-          schema:
-            type: integer
-        - name: device_id
-          in: path
-          description: Número de série do dispositivo
-          example: 100000
-          required: true
-          schema:
-            type: integer
-            maximum: 999999
+        - $ref: "#/components/parameters/schedule_id"
+        - $ref: "#/components/parameters/device_id"
       responses:
         "200":
           description: OK. Removeu agendamento com sucesso.
         "204":
-          description: No Content. O dispositivo pode estar desligado no momento ou sua autenticação está incorreta.
+          $ref: "#/components/responses/NoContent"
         "401":
-          description: Unauthorized. Seu token de acesso expirou ou foi revogado.
+          $ref: "#/components/responses/Unauthorized"
         "403":
-          description: Forbidden. Não possue acesso ao dispositivo.
+          $ref: "#/components/responses/Forbidden"
         "404":
-          description: Not Found. Agendamento não localizado para remove-lo.
+          $ref: "#/components/responses/NotFound"
 
 security:
   - briseAuth: []
