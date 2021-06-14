@@ -3,14 +3,12 @@
 
 <head>
 	<title>Brise API</title>
-	<!-- needed for adaptive design -->
 	<meta charset="utf-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link href="https://fonts.googleapis.com/css?family=Montserrat:300,400,700|Roboto:300,400,700" rel="stylesheet">
 
-	<!--
-    ReDoc doesn't change outer page styles
-    -->
+	<script src="https://unpkg.com/rapipdf/dist/rapipdf-min.js"></script>
+
 	<style>
 		body {
 			margin: 0;
@@ -20,14 +18,24 @@
 </head>
 
 <body>
+	<redoc>
+	</redoc>
+	<script src="https://cdn.jsdelivr.net/npm/redoc@next/bundles/redoc.standalone.js"></script>
+	<script>
+		Redoc.init('../brise.openapi.yaml', { // options
+			theme: {
+				logo: {
+					maxHeight: '380px'
+				}
+			}
+		})
+	</script>
 
+	<p style="margin:10px;">
+		<rapi-pdf style="width:100%; height:40px; font-size:18px;" spec-url="../brise.openapi.yaml" button-bg="#b44646">
+			<!-- hide-input=true -->
+	</p>
 
-	<redoc spec-url='../brise.openapi.yaml'></redoc>
-	<script src="https://cdn.jsdelivr.net/npm/redoc@next/bundles/redoc.standalone.js"> </script>
-
-	<rapi-pdf style="width:100%; height:40px; font-size:18px;" spec-url="../brise.openapi.yaml" button-bg="#b44646">
-	</rapi-pdf>
-	<script src="https://unpkg.com/rapipdf/dist/rapipdf-min.js"></script>
 </body>
 
 </html>
