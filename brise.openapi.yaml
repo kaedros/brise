@@ -198,6 +198,19 @@ components:
           type: integer
           description: Temperatura desejada para economia de aquecimento
           example: 18
+    parameterput:
+      required:
+        [
+          modeDevice,
+          modeAC,
+          setpointCool,
+          fanSpeed,
+          setpointHeat,
+          ecoCool,
+          ecoHeat,
+        ]
+      allOf:
+        - $ref: "#/components/schemas/parameter"
     config:
       type: object
       properties:
@@ -254,6 +267,11 @@ components:
           type: boolean
           description: Habilita a função de não perturbe do led sinalizador
           example: true
+    configput:
+      required:
+        [name, time_zone, btu, log_day, pulse_kw, enable_fan, enable_heat, dnd]
+      allOf:
+        - $ref: "#/components/schemas/config"
 
   responses:
     Unauthorized:
@@ -402,63 +420,7 @@ paths:
         content:
           application/json:
             schema:
-              properties:
-                name:
-                  type: string
-                  description: Nome para identificação do dispositivo.
-                  example: Maquina 1
-                time_zone:
-                  type: integer
-                  description: Fuso horário
-                  minimum: -12
-                  maximum: 13
-                  example: -3
-                group_leve1:
-                  type: string
-                  description: Grupo nivel 1
-                  maxLength: 20
-                  example: PredioAdministracao
-                group_leve2:
-                  type: string
-                  description: Grupo nivel 2
-                  maxLength: 20
-                  example: BlocoA
-                group_leve3:
-                  type: string
-                  description: Grupo nivel 3
-                  maxLength: 20
-                  example: PrimeiroAndar
-                group_leve4:
-                  type: string
-                  description: Grupo nivel 4
-                  maxLength: 20
-                  example: SalaReuniao
-                btu:
-                  type: integer
-                  description: Potencia frigorifica da AC em BTU
-                  example: 12000
-                log_day:
-                  type: integer
-                  description: Dia do mês para registro do consumo. ```O registro irá ocorrer as 23:59:59 do dia.```
-                  minimum: 1
-                  maximum: 31
-                  example: 31
-                pulse_kw:
-                  type: integer
-                  description: Número de pulsos por KW (QuiloWhatt) do sensor de consumo externo.
-                  example: 2000
-                enable_fan:
-                  type: boolean
-                  description: Habilita as funções de ventilação.
-                  example: true
-                enable_heat:
-                  type: boolean
-                  description: Habilita as funções de aquecimento.
-                  example: true
-                dnd:
-                  type: boolean
-                  description: Habilita a função de não perturbe do led sinalizador
-                  example: true
+              $ref: "#/components/schemas/configput"
       responses:
         "200":
           description: OK. Configurações alteradas com sucesso.
@@ -501,49 +463,7 @@ paths:
         content:
           application/json:
             schema:
-              properties:
-                modeDevice:
-                  type: integer
-                  description: |-
-                    Modo de funcionamento do dispositivo:
-                    - 0: Desligado
-                    - 1: Manual
-                    - 2: Absoluto
-                    - 3: Eco
-                  example: 0
-                modeAC:
-                  type: integer
-                  description: |-
-                    Modo de funcionamento do Ar Condicionado:
-                    - 0: Refrigeração
-                    - 1: Aquecimento
-                    - 2: Automatico `Apenas no Modo Eco de funcionamento dispositivo`
-                    - 3: Ventilação
-                  example: 0
-                setpointCool:
-                  type: integer
-                  description: Temperatura desejada para resfriamento `0 = desliga o AC`
-                  example: 24
-                fanSpeed:
-                  type: integer
-                  description: |-
-                    Velocidade do ventilador
-                    - 1: Velocidade Baixa
-                    - 2: Velocidade Média
-                    - 3: Velocidade Alta
-                  example: 3
-                setpointHeat:
-                  type: integer
-                  description: Temperatura desejada para aquecimento `0 = desliga o AC`
-                  example: 20
-                ecoCool:
-                  type: integer
-                  description: Temperatura desejada para economia de resfriamento
-                  example: 22
-                ecoHeat:
-                  type: integer
-                  description: Temperatura desejada para economia de aquecimento
-                  example: 18
+              $ref: "#/components/schemas/parameterput"
       responses:
         "200":
           description: OK. Alterada as parametrizações com sucesso.
