@@ -37,7 +37,9 @@ tags:
   - name: Usuário
   - name: Dispositivo
   - name: Agenda
-    description: A agenda contempla registros de agendamentos locais que serão executados de forma independente do serviço de Cloud, sendo garantida a execusão do agendamento. os agendamentos não tem como intensão a garantia do estado do dispostiivo ou do AC durante um periodo, ou seja, podem haver alterações do contexto por usuários autorizados durante este periodo.
+    description: |
+      A agenda contempla registros de agendamentos locais que serão executados de forma independente do serviço de Cloud, sendo garantida a execução do agendamento.
+      <aside>Os agendamentos não tem como intensão a garantia da permanência do estado do dispositivo ou do AC durante um período, ou seja, podem haver alterações do contexto por usuários autorizados durante este período.
 
 servers:
   - url: "https://brisev2.agst.com.br:8090/api/v2"
@@ -48,15 +50,9 @@ components:
     schedules:
       type: object
       properties:
-        schedule_id:
-          type: integer
-          format: int32
-          description: Número único de identificação do agendamento
-          example: 1622126644
         name:
           type: string
           description: Nome para identificar o agendamento
-          pattern: ^[A-Za-z0-9]{0,20}$
           example: Turno Tarde
         enable:
           type: boolean
@@ -94,8 +90,22 @@ components:
             - Meses: Número de meses que o agendamento irá se repetir
             - Anos: Número de anos que o agendamento irá se repetir
           example: 1
-        parameter:
-          $ref: "#/components/schemas/parameter"
+    schedelesput:
+      required:
+        [name, enable, date_start, date_end, repetition_mode, repetition_value]
+      allOf:
+        - $ref: "#/components/schemas/schedules"
+      properties:
+        name:
+          maxLength: 20
+          pattern: ^[A-Za-z0-9]{0,20}$
+        date_start:
+          minimum: 0
+        date_end:
+          minimum: 0
+        repetition_mode:
+          minimum: 0
+          maximum: 4
     variables:
       type: object
       properties:
@@ -171,12 +181,12 @@ components:
             Modo de funcionamento do Ar Condicionado:
             - 0: Refrigeração
             - 1: Aquecimento
-            - 2: Automatico `Apenas no Modo Eco de funcionamento dispositivo`
+            - 2: Automatico
             - 3: Ventilação
           example: 0
         setpointCool:
           type: integer
-          description: Temperatura desejada para resfriamento `0 = desliga o AC`
+          description: Temperatura desejada para resfriamento
           example: 24
         fanSpeed:
           type: integer
@@ -188,7 +198,7 @@ components:
           example: 3
         setpointHeat:
           type: integer
-          description: Temperatura desejada para aquecimento `0 = desliga o AC`
+          description: Temperatura desejada para aquecimento
           example: 20
         ecoCool:
           type: integer
@@ -211,13 +221,44 @@ components:
         ]
       allOf:
         - $ref: "#/components/schemas/parameter"
+      properties:
+        modeDevice:
+          minimum: 0
+          maximum: 3
+        modeAC:
+          minimum: 0
+          maximum: 3
+          description: |-
+            Modo de funcionamento do Ar Condicionado:
+            - 0: Refrigeração
+            - 1: Aquecimento
+            - 2: Automatico `Apenas no Modo Eco de funcionamento dispositivo`
+            - 3: Ventilação
+        setpointCool:
+          minimum: 0
+          maximum: 28
+          description: Temperatura desejada para resfriamento `0 = desliga o AC`
+        fanSpeed:
+          minimum: 1
+          maximum: 3
+        setpointHeat:
+          minimum: 0
+          maximum: 28
+          description: Temperatura desejada para aquecimento `0 = desliga o AC`
+        ecoCool:
+          minimum: 1
+          maximum: 28
+          description: Temperatura desejada para economia de resfriamento `O valor tem que ser < que setpointCool`
+        ecoHeat:
+          minimum: 1
+          maximum: 28
+          description: Temperatura desejada para economia de aquecimento `O valor tem que ser > que setpointHeat`
     config:
       type: object
       properties:
         name:
           type: string
           description: Nome para identificação do dispositivo
-          pattern: ^[A-Za-z0-9]{0,20}$
           example: Maquina 1
         time_zone:
           type: integer
@@ -226,22 +267,18 @@ components:
         group_leve1:
           type: string
           description: Grupo nivel 1
-          pattern: ^[A-Za-z0-9]{0,20}$
           example: PredioAdministracao
         group_leve2:
           type: string
           description: Grupo nivel 2
-          pattern: ^[A-Za-z0-9]{0,20}$
           example: BlocoA
         group_leve3:
           type: string
           description: Grupo nivel 3
-          pattern: ^[A-Za-z0-9]{0,20}$
           example: PrimeiroAndar
         group_leve4:
           type: string
           description: Grupo nivel 4
-          pattern: ^[A-Za-z0-9]{0,20}$
           example: SalaReuniao
         btu:
           type: integer
@@ -272,6 +309,29 @@ components:
         [name, time_zone, btu, log_day, pulse_kw, enable_fan, enable_heat, dnd]
       allOf:
         - $ref: "#/components/schemas/config"
+      properties:
+        name:
+          maxLength: 20
+          pattern: ^[A-Za-z0-9]{0,20}$
+        time_zone:
+          minimum: -12
+          maximum: 13
+        group_leve1:
+          maxLength: 20
+          pattern: ^[A-Za-z0-9]{0,20}$
+        group_leve2:
+          maxLength: 20
+          pattern: ^[A-Za-z0-9]{0,20}$
+        group_leve3:
+          maxLength: 20
+          pattern: ^[A-Za-z0-9]{0,20}$
+        group_leve4:
+          maxLength: 20
+          pattern: ^[A-Za-z0-9]{0,20}$
+        log_day:
+          minimum: 1
+          maximum: 31
+          description: Dia do mês para registro do consumo. `O registro irá ocorrer as 23:59:59 do dia.`
 
   responses:
     Unauthorized:
@@ -387,7 +447,7 @@ paths:
         "404":
           description: Not Found. Este dispositivo não está relacionado ao usuário para remove-lo.
 
-  "/device/configs/{device_id}":
+  "/device/{device_id}/configs":
     get:
       summary: Obtem configurações
       description: Obtem as configurações de um dispositivo especifico
@@ -430,7 +490,7 @@ paths:
           $ref: "#/components/responses/Unauthorized"
         "403":
           $ref: "#/components/responses/Forbidden"
-  "/device/parameters/{device_id}":
+  "/device/{device_id}/parameters":
     get:
       summary: Obtem paremetrizações
       description: Obtem as paremetrizações de um dispositivo especifico
@@ -473,7 +533,7 @@ paths:
           $ref: "#/components/responses/Unauthorized"
         "403":
           $ref: "#/components/responses/Forbidden"
-  "/device/variables/{device_id}":
+  "/device/{device_id}/variables":
     get:
       summary: Obtem variáveis
       description: Obtem as variáveis do dispositivo
@@ -495,7 +555,7 @@ paths:
         "403":
           $ref: "#/components/responses/Forbidden"
 
-  /schedules/{device_id}:
+  "/device/{device_id}/schedules":
     get:
       summary: Obtem agendamentos
       description: Obtem todos os agendamentos do dispositivo
@@ -514,7 +574,19 @@ paths:
                   schedules:
                     type: array
                     items:
-                      $ref: "#/components/schemas/schedules"
+                      allOf:
+                        - type: object
+                          properties:
+                            schedule_id:
+                              type: integer
+                              format: int32
+                              description: Número único de identificação do agendamento
+                              example: 1622126644
+                        - $ref: "#/components/schemas/schedules"
+                        - type: object
+                          properties:
+                            parameter:
+                              $ref: "#/components/schemas/parameter"
         "204":
           $ref: "#/components/responses/NoContent"
         "401":
@@ -534,11 +606,14 @@ paths:
         content:
           application/json:
             schema:
-              required:
-                - schedule_id
-                - date_start
-                - date_end
-              $ref: "#/components/schemas/schedules"
+              required: [parameter]
+              allOf:
+                - $ref: "#/components/schemas/schedelesput"
+                - type: object
+                  properties:
+                    parameter:
+                      $ref: "#/components/schemas/parameterput"
+
       responses:
         "200":
           description: OK. Novo agendamento ao dispositivo adicionado com sucesso.
@@ -548,7 +623,7 @@ paths:
           $ref: "#/components/responses/Unauthorized"
         "403":
           $ref: "#/components/responses/Forbidden"
-  "/schedules/{schedule_id}/{device_id}":
+  "/device/{device_id}/schedules/{schedule_id}":
     put:
       summary: Altera agendamento
       description: Altera agendamento
@@ -559,11 +634,14 @@ paths:
         content:
           application/json:
             schema:
-              required:
-                - schedule_id
-                - date_start
-                - date_end
-              $ref: "#/components/schemas/schedules"
+              required: [parameter]
+              allOf:
+                - $ref: "#/components/schemas/schedelesput"
+                - type: object
+                  properties:
+                    parameter:
+                      $ref: "#/components/schemas/parameterput"
+
       parameters:
         - $ref: "#/components/parameters/schedule_id"
         - $ref: "#/components/parameters/device_id"
