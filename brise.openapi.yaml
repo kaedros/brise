@@ -376,7 +376,7 @@ components:
           tokenUrl: "https://brisev2.agst.com.br:8090/api/v2/exchange-code"
 
 paths:
-  /user/devices:
+  "/user/devices":
     get:
       summary: Obtem dispositivos
       description: Obtem os dispositivos ao qual a conta do usuário tem acesso
